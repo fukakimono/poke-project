@@ -81,7 +81,7 @@ function App() {
   const idList = details?.map((p: any) => p.id) || [];
   const imageList = details?.map((p: any) => p.sprites.front_default) || [];
   // 日本語名取得
-  const { data: jpNames = [] } = useQuery({
+  const { data: jpNames = [], isLoading: jpLoading } = useQuery({
     queryKey: ["pokemon-jp-names", idList],
     queryFn: async () => {
       return await Promise.all(
@@ -93,9 +93,11 @@ function App() {
   const nameList =
     jpNames.length === idList.length && jpNames.every(Boolean)
       ? jpNames
-      : details?.map((p: any) => p.name) || [];
+      : [];
   const typesList =
     details?.map((p: any) => p.types.map((t: any) => t.type.name)) || [];
+
+  const isBoardLoading = isLoading || detailsLoading || jpLoading || nameList.length !== idList.length;
 
   return (
     <div
@@ -107,7 +109,7 @@ function App() {
       }}
     >
       <div style={{ flex: 1, minHeight: 320 }}>
-        {isLoading || detailsLoading ? (
+        {isBoardLoading ? (
           <div
             style={{
               display: "flex",
