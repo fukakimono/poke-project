@@ -3,7 +3,11 @@ import { useState } from "react";
 import "./App.css";
 import Board from "./components/Board";
 import Pagination from "./components/Pagination";
-import { getAllPokemon, getPokemonDetails } from "./utils/pokemon";
+import {
+  getAllPokemon,
+  getPokemonDetails,
+  getPokemonJapaneseName,
+} from "./utils/pokemon";
 
 type NamedAPIResource = {
   name: string;
@@ -76,13 +80,32 @@ function App() {
   // Board用のリストを作成
   const idList = details?.map((p: any) => p.id) || [];
   const imageList = details?.map((p: any) => p.sprites.front_default) || [];
-  const nameList = details?.map((p: any) => p.name) || [];
-  const typesList = details?.map((p: any) =>
-    p.types.map((t: any) => t.type.name)
-  ) || [];
+  // 日本語名取得
+  const { data: jpNames = [] } = useQuery({
+    queryKey: ["pokemon-jp-names", idList],
+    queryFn: async () => {
+      return await Promise.all(
+        idList.map((id: number) => getPokemonJapaneseName(id))
+      );
+    },
+    enabled: idList.length > 0,
+  });
+  const nameList =
+    jpNames.length === idList.length && jpNames.every(Boolean)
+      ? jpNames
+      : details?.map((p: any) => p.name) || [];
+  const typesList =
+    details?.map((p: any) => p.types.map((t: any) => t.type.name)) || [];
 
   return (
-    <div style={{ minHeight: '80vh', display: 'flex', flexDirection: 'column', justifyContent: 'flex-start' }}>
+    <div
+      style={{
+        minHeight: "80vh",
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "flex-start",
+      }}
+    >
       <div style={{ flex: 1, minHeight: 320 }}>
         {isLoading || detailsLoading ? (
           <div
@@ -106,7 +129,7 @@ function App() {
           <p>データがありません</p>
         )}
       </div>
-      <div style={{ marginTop: 24, display: 'flex', justifyContent: 'center' }}>
+      <div style={{ marginTop: 24, display: "flex", justifyContent: "center" }}>
         <Pagination
           onPrev={() => pageInfo.previous && setUrl(pageInfo.previous!)}
           onNext={() => pageInfo.next && setUrl(pageInfo.next!)}
