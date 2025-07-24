@@ -72,7 +72,19 @@ function App() {
   });
 
   if (error || detailsError) return <p>何らかのエラーが起きました。</p>;
-  if (isLoading || detailsLoading) return <p>ローディング中...</p>;
+  if (isLoading || detailsLoading)
+    return (
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "40vh",
+        }}
+      >
+        <p>ローディング中...</p>
+      </div>
+    );
   if (!details || details.length === 0) return <p>データがありません</p>;
 
   // Board用のリストを作成
