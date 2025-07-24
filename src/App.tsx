@@ -1,40 +1,8 @@
-import { useQuery } from "@tanstack/react-query";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import "./App.css";
 import Board from "./components/Board";
 import Pagination from "./components/Pagination";
-import {
-  getAllPokemon,
-  getPokemonDetails,
-  getPokemonJapaneseName,
-} from "./utils/pokemon";
-
-type NamedAPIResource = {
-  name: string;
-  url: string;
-};
-type PokemonAbility = {
-  is_hidden: boolean;
-  slot: number;
-  ability: NamedAPIResource;
-};
-type PokemonType = {
-  slot: number;
-  type: NamedAPIResource;
-};
-// ポケモンの画像
-type PokemonSprites = {
-  front_default: string;
-};
-export type Pokemon = {
-  id: number;
-  name: string;
-  height: number;
-  weight: number;
-  abilities: PokemonAbility[];
-  types: PokemonType[];
-  sprites: PokemonSprites;
-};
+import { usePokemonQuery } from "./hooks/usePokemonQuery";
 
 function App() {
   const [url, setUrl] = useState("https://pokeapi.co/api/v2/pokemon/?limit=6");
@@ -44,60 +12,24 @@ function App() {
   }>({ next: null, previous: null });
 
   const {
-    isLoading,
+    isBoardLoading,
     error,
-    data: allPokemon,
-  } = useQuery({
-    queryKey: ["pokemon-list", url],
-    queryFn: async () => {
-      const result = await getAllPokemon(url);
-      setPageInfo({ next: result.next, previous: result.previous });
-      return result;
-    },
-  });
+    idList,
+    imageList,
+    nameList,
+    typesList,
+    allPokemon,
+  } = usePokemonQuery(url);
 
-  // 6体分の詳細データを取得
-  const {
-    data: details,
-    isLoading: detailsLoading,
-    error: detailsError,
-  } = useQuery({
-    queryKey: ["pokemon-details", allPokemon?.results?.map((p: any) => p.url)],
-    queryFn: async () => {
-      if (!allPokemon) return [];
-      const results = allPokemon.results;
-      if (!results || results.length === 0) return [];
-      const detailList = await Promise.all(
-        results.map((p: any) => getPokemonDetails(p.url))
-      );
-      return detailList;
-    },
-    enabled: !!allPokemon,
-  });
+  // ページ情報の更新
+  // allPokemonが変わったときにpageInfoを更新
+  useEffect(() => {
+    if (allPokemon) {
+      setPageInfo({ next: allPokemon.next, previous: allPokemon.previous });
+    }
+  }, [allPokemon]);
 
-  if (error || detailsError) return <p>何らかのエラーが起きました。</p>;
-
-  // Board用のリストを作成
-  const idList = details?.map((p: any) => p.id) || [];
-  const imageList = details?.map((p: any) => p.sprites.front_default) || [];
-  // 日本語名取得
-  const { data: jpNames = [], isLoading: jpLoading } = useQuery({
-    queryKey: ["pokemon-jp-names", idList],
-    queryFn: async () => {
-      return await Promise.all(
-        idList.map((id: number) => getPokemonJapaneseName(id))
-      );
-    },
-    enabled: idList.length > 0,
-  });
-  const nameList =
-    jpNames.length === idList.length && jpNames.every(Boolean)
-      ? jpNames
-      : [];
-  const typesList =
-    details?.map((p: any) => p.types.map((t: any) => t.type.name)) || [];
-
-  const isBoardLoading = isLoading || detailsLoading || jpLoading || nameList.length !== idList.length;
+  if (error) return <p>何らかのエラーが起きました。</p>;
 
   return (
     <div
@@ -120,7 +52,7 @@ function App() {
           >
             <p>ローディング中...</p>
           </div>
-        ) : details && details.length > 0 ? (
+        ) : idList.length > 0 ? (
           <Board
             idList={idList}
             imageList={imageList}
