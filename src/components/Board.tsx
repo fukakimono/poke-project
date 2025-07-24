@@ -20,6 +20,7 @@ const Board = ({ idList, imageList, nameList, typesList }: BoardProps) => {
       {idList.slice(0, 6).map((id, i) => (
         <Card
           key={id}
+          id={id}
           image={imageList[i]}
           name={nameList[i]}
           types={typesList[i]}
