@@ -5,9 +5,21 @@ type PaginationProps = {
   nextDisabled: boolean;
 };
 
-const Pagination = ({ onPrev, onNext, prevDisabled, nextDisabled }: PaginationProps) => {
+const Pagination = ({
+  onPrev,
+  onNext,
+  prevDisabled,
+  nextDisabled,
+}: PaginationProps) => {
   return (
-    <div style={{ display: "flex", justifyContent: "center", gap: 16, marginBottom: 16 }}>
+    <div
+      style={{
+        display: "flex",
+        justifyContent: "center",
+        gap: 16,
+        marginBottom: 16,
+      }}
+    >
       <button onClick={onPrev} disabled={prevDisabled}>
         前へ
       </button>
