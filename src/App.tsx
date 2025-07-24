@@ -72,43 +72,48 @@ function App() {
   });
 
   if (error || detailsError) return <p>何らかのエラーが起きました。</p>;
-  if (isLoading || detailsLoading)
-    return (
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          height: "40vh",
-        }}
-      >
-        <p>ローディング中...</p>
-      </div>
-    );
-  if (!details || details.length === 0) return <p>データがありません</p>;
 
   // Board用のリストを作成
-  const idList = details.map((p: any) => p.id);
-  const imageList = details.map((p: any) => p.sprites.front_default);
-  const nameList = details.map((p: any) => p.name);
-  const typesList = details.map((p: any) =>
+  const idList = details?.map((p: any) => p.id) || [];
+  const imageList = details?.map((p: any) => p.sprites.front_default) || [];
+  const nameList = details?.map((p: any) => p.name) || [];
+  const typesList = details?.map((p: any) =>
     p.types.map((t: any) => t.type.name)
-  );
+  ) || [];
 
   return (
-    <div>
-      <Board
-        idList={idList}
-        imageList={imageList}
-        nameList={nameList}
-        typesList={typesList}
-      />
-      <Pagination
-        onPrev={() => pageInfo.previous && setUrl(pageInfo.previous!)}
-        onNext={() => pageInfo.next && setUrl(pageInfo.next!)}
-        prevDisabled={!pageInfo.previous}
-        nextDisabled={!pageInfo.next}
-      />
+    <div style={{ minHeight: '80vh', display: 'flex', flexDirection: 'column', justifyContent: 'flex-start' }}>
+      <div style={{ flex: 1, minHeight: 320 }}>
+        {isLoading || detailsLoading ? (
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              height: "40vh",
+            }}
+          >
+            <p>ローディング中...</p>
+          </div>
+        ) : details && details.length > 0 ? (
+          <Board
+            idList={idList}
+            imageList={imageList}
+            nameList={nameList}
+            typesList={typesList}
+          />
+        ) : (
+          <p>データがありません</p>
+        )}
+      </div>
+      <div style={{ marginTop: 24, display: 'flex', justifyContent: 'center' }}>
+        <Pagination
+          onPrev={() => pageInfo.previous && setUrl(pageInfo.previous!)}
+          onNext={() => pageInfo.next && setUrl(pageInfo.next!)}
+          prevDisabled={!pageInfo.previous}
+          nextDisabled={!pageInfo.next}
+        />
+      </div>
     </div>
   );
 }
